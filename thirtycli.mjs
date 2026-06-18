@@ -134,13 +134,25 @@ async function setup() {
 
   if (provider.value === '9router' || provider.value === 'both') {
     if (!nineRunning) {
-      console.log(`\n  ${c.yellow}⚠  9Router belum running.${c.reset}`);
-      console.log(`  ${c.dim}Install: npm install -g 9router && 9router${c.reset}`);
-      console.log(`  ${c.dim}Jalanin dulu di terminal lain, terus restart ThirtyCLI.${c.reset}\n`);
+      console.log(`\n  ${c.yellow}⚠  9Router lokal tidak terdeteksi.${c.reset}`);
     }
-    config.nine_url = 'http://localhost:20128/v1';
-    const ans = await prompt(`  ${c.dim}Custom 9Router port? (enter = default 20128): ${c.reset}`);
-    if (ans) config.nine_url = `http://localhost:${ans}/v1`;
+
+    const modeOpts = [
+      { label: 'Local  ', desc: '— http://localhost:20128/v1', value: 'local' },
+      { label: 'Remote ', desc: '— custom URL (mis. https://ai.akf.biz.id/v1)', value: 'remote' },
+    ];
+    const mode = await choose('9Router endpoint:', modeOpts);
+
+    if (mode.value === 'local') {
+      const port = await prompt(`  ${c.dim}Port? (enter = 20128): ${c.reset}`);
+      config.nine_url = `http://localhost:${port || '20128'}/v1`;
+      config.nine_key = null;
+    } else {
+      const url = await prompt(`  ${c.yellow}9Router URL (mis. https://ai.akf.biz.id/v1): ${c.reset}`);
+      config.nine_url = url || 'https://ai.akf.biz.id/v1';
+      const key = await prompt(`  ${c.yellow}API Key (enter kalau tidak ada): ${c.reset}`);
+      config.nine_key = key || null;
+    }
   }
 
   saveConfig(config);
@@ -153,14 +165,8 @@ async function resolveEnv(config) {
   const env = { ...process.env };
 
   if (config.provider === '9router') {
-    const running = await check9Router();
-    if (!running) {
-      console.log(`\n  ${c.red}✗ 9Router tidak terdeteksi di ${config.nine_url}${c.reset}`);
-      console.log(`  ${c.dim}Jalanin dulu: npm install -g 9router && 9router${c.reset}\n`);
-      process.exit(1);
-    }
     env.ANTHROPIC_BASE_URL = config.nine_url;
-    env.ANTHROPIC_API_KEY = 'thirtycli';
+    env.ANTHROPIC_API_KEY = config.nine_key || 'thirtycli';
     console.log(`  ${c.green}✓ 9Router${c.reset} ${c.dim}→ ${config.nine_url}${c.reset}`);
 
   } else if (config.provider === 'openrouter') {
@@ -174,7 +180,7 @@ async function resolveEnv(config) {
     const running = await check9Router();
     if (running) {
       env.ANTHROPIC_BASE_URL = config.nine_url;
-      env.ANTHROPIC_API_KEY = 'thirtycli';
+      env.ANTHROPIC_API_KEY = config.nine_key || 'thirtycli';
       console.log(`  ${c.green}✓ 9Router${c.reset} ${c.dim}(aktif)${c.reset}`);
     } else {
       env.ANTHROPIC_BASE_URL = 'https://openrouter.ai/api/v1';
