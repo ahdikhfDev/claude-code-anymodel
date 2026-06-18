@@ -1,0 +1,16 @@
+{
+  "name": "thirty-cli",
+  "version": "1.0.0",
+  "description": "ThirtyCLI — open-source AI coding assistant. OpenRouter & 9Router supported.",
+  "bin": {
+    "thirtycli": "./thirtycli.mjs"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "ahdikhfDev",
+  "license": "MIT",
+  "homepage": "https://github.com/ahdikhfDev/ThirtyCLI",
+  "dependencies": {}
+}

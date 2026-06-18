@@ -1,0 +1,15 @@
+# Config & secrets
+.env
+.thirtycli.json
+
+# Source files - jangan ikut push
+*.ts
+*.tsx
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
