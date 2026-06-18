@@ -153,6 +153,23 @@ async function setup() {
       const key = await prompt(`  ${c.yellow}API Key (enter kalau tidak ada): ${c.reset}`);
       config.nine_key = key || null;
     }
+
+    // Model / Combo picker untuk 9Router
+    const modelOpts9 = [
+      { label: 'Combo/alias sendiri    ', desc: '— mis. freeAI, my-stack, dll', value: 'custom' },
+      { label: 'ag/gemini-3-flash-agent', desc: '— Antigravity Gemini Flash (gratis)', value: 'ag/gemini-3-flash-agent' },
+      { label: 'kr/claude-sonnet-4.5   ', desc: '— Kiro Claude Sonnet (gratis)', value: 'kr/claude-sonnet-4.5' },
+      { label: 'kr/claude-opus-4-6     ', desc: '— Kiro Claude Opus (gratis)', value: 'kr/claude-opus-4-6' },
+      { label: 'glm/glm-4.7            ', desc: '— GLM murah $0.6/1M', value: 'glm/glm-4.7' },
+      { label: 'if/kimi-k2-thinking    ', desc: '— iFlow reasoning (gratis)', value: 'if/kimi-k2-thinking' },
+      { label: 'Default dashboard      ', desc: '— biarkan 9Router yang pilih', value: '' },
+    ];
+    const nineModel = await choose('Model / Combo 9Router:', modelOpts9);
+    if (nineModel.value === 'custom') {
+      config.nine_model = await prompt(`  ${c.yellow}Nama model/combo: ${c.reset}`);
+    } else {
+      config.nine_model = nineModel.value;
+    }
   }
 
   saveConfig(config);
@@ -167,7 +184,9 @@ async function resolveEnv(config) {
   if (config.provider === '9router') {
     env.ANTHROPIC_BASE_URL = config.nine_url;
     env.ANTHROPIC_API_KEY = config.nine_key || 'thirtycli';
-    console.log(`  ${c.green}✓ 9Router${c.reset} ${c.dim}→ ${config.nine_url}${c.reset}`);
+    if (config.nine_model) env.ANTHROPIC_MODEL = config.nine_model;
+    const modelLabel = config.nine_model || 'default dashboard';
+    console.log(`  ${c.green}✓ 9Router${c.reset} ${c.dim}→ ${config.nine_url} | model: ${modelLabel}${c.reset}`);
 
   } else if (config.provider === 'openrouter') {
     env.ANTHROPIC_BASE_URL = 'https://openrouter.ai/api/v1';
